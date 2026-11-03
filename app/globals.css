@@ -1,0 +1,35 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background-color: #000000;
+  color: #ffffff;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  user-select: none;
+  -webkit-user-select: none;
+  position: relative;
+}
+
+.word {
+  position: absolute;
+  opacity: 0;
+  color: #ffffff;
+  font-size: clamp(3rem, 8vw, 6.5rem);
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  cursor: default;
+  white-space: nowrap;
+  pointer-events: auto;
+  transition: opacity 0.5s ease-out;
+}
+
+.word.visible {
+  opacity: 1;
+}
