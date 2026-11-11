@@ -1,8 +1,8 @@
 import './globals.css';
 
 export const metadata = {
-  title: 'Eu Te Amo',
-  description: 'Clone TabNews',
+  title: 'TabNews - Em Construção',
+  description: 'Estamos nesse exato momento reconstruindo o TabNews.',
 };
 
 export default function RootLayout({ children }) {

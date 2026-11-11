@@ -1,70 +1,82 @@
-'use client';
+import ConfettiAnimation from './Confetti';
 
-import { useEffect, useRef, useState } from 'react';
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
-const WORDS = ['EU', 'TE', 'AMO'];
-
-export default function Home() {
-  const [positions, setPositions] = useState([]);
-  const [revealed, setRevealed] = useState({});
-  const refs = useRef([]);
-
-  useEffect(() => {
-    const padding = 30;
-    const placedBoxes = [];
-
-    const newPositions = refs.current.map((el) => {
-      const width = el?.offsetWidth || 120;
-      const height = el?.offsetHeight || 60;
-      const maxX = Math.max(padding, window.innerWidth - width - padding);
-      const maxY = Math.max(padding, window.innerHeight - height - padding);
-
-      let left = padding;
-      let top = padding;
-      let attempts = 0;
-      let overlaps = true;
-
-      while (overlaps && attempts < 150) {
-        left = Math.floor(Math.random() * (maxX - padding + 1)) + padding;
-        top = Math.floor(Math.random() * (maxY - padding + 1)) + padding;
-
-        overlaps = placedBoxes.some(
-          (b) =>
-            !(
-              left + width + padding < b.left ||
-              left > b.left + b.width + padding ||
-              top + height + padding < b.top ||
-              top > b.top + b.height + padding
-            )
-        );
-        attempts++;
+async function getTotalContents() {
+  try {
+    const response = await fetch(
+      'https://www.tabnews.com.br/api/v1/contents?strategy=new&page=1&per_page=1',
+      {
+        cache: 'no-store',
       }
+    );
 
-      placedBoxes.push({ left, top, width, height });
-      return { left, top };
-    });
+    if (!response.ok) {
+      console.error(`Falha ao consultar API do TabNews: status ${response.status}`);
+      return null;
+    }
 
-    setPositions(newPositions);
-  }, []);
+    const totalHeader = response.headers.get('x-pagination-total-rows');
+    if (totalHeader) {
+      return Number(totalHeader);
+    }
 
-  const reveal = (index) => {
-    setRevealed((prev) => ({ ...prev, [index]: true }));
-  };
+    const linkHeader = response.headers.get('link');
+    if (linkHeader) {
+      const match = linkHeader.match(/page=(\d+)&per_page=\d+>; rel="last"/);
+      if (match && match[1]) {
+        return Number(match[1]);
+      }
+    }
+
+    return null;
+  } catch (error) {
+    console.error('Erro na requisição para API do TabNews:', error);
+    return null;
+  }
+}
+
+export default async function Home() {
+  const totalContents = await getTotalContents();
 
   return (
-    <main>
-      {WORDS.map((word, i) => (
-        <span
-          key={word}
-          ref={(el) => (refs.current[i] = el)}
-          className={`word ${revealed[i] ? 'visible' : ''}`}
-          style={positions[i] ? { left: `${positions[i].left}px`, top: `${positions[i].top}px` } : undefined}
-          onPointerEnter={() => reveal(i)}
-          onTouchStart={() => reveal(i)}
-        >
-          {word}
-        </span>
-      ))}
+    <main className="page-wrapper">
+      <ConfettiAnimation />
+      <div className="card">
+        <div className="badge-wrapper">
+          <div className="badge">
+            <span className="pulse-dot"></span>
+            Em Construção
+          </div>
+        </div>
+
+        <h1 className="title">Clone TabNews</h1>
+
+        <p className="phrase">
+          Estamos nesse exato momento reconstruindo o TabNews, um lugar na internet para quem trabalha com tecnologia e precisa consumir conteúdos com valor concreto.
+        </p>
+
+        <div className="stats-card">
+          <span className="stats-label">Total de conteúdos publicados no TabNews</span>
+          <span className="stats-value">
+            {totalContents !== null ? totalContents.toLocaleString('pt-BR') : 'Indisponível no momento'}
+          </span>
+          <span className="stats-note">Atualizado via API pública a cada acesso</span>
+        </div>
+
+        <div className="button-wrapper">
+          <a
+            href="https://www.tabnews.com.br"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="official-link"
+          >
+            Acessar o TabNews oficial
+            <span aria-hidden="true">↗</span>
+          </a>
+        </div>
+      </div>
     </main>
   );
 }
